@@ -20,7 +20,7 @@ public class Game
     {
         bool playerTurn = true;
 
-        while (playerHand.Count > 0 && computerHand.Count > 0)
+        while ((playerHand.Count > 0 && computerHand.Count > 0) || (GetPlayableTiles(playerHand).Count == 0 && GetPlayableTiles(computerHand).Count == 0))
         {
             if (playerTurn)
             {
@@ -57,12 +57,29 @@ public class Game
 
     private void PlayerMove()
     {
+
         bool validMove = false;
 
         while (!validMove)
         {
             Console.WriteLine("Your hand: " + string.Join(" ", playerHand));
             Console.WriteLine("Board: " + string.Join(" ", board));
+
+            if (GetPlayableTiles(playerHand).Count == 0)
+            {
+                Console.WriteLine("No playable tiles. Drawing a tile...");
+                var drawnTile = dominoSet.DrawTile();
+                if (drawnTile != null)
+                {
+                    playerHand.Add(drawnTile);
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("No more tiles to draw. Passing turn...");
+                    return;
+                }
+            }
 
             Console.WriteLine("Enter the index of the tile you want to play: ");
             int index = int.Parse(Console.ReadLine());
@@ -89,13 +106,17 @@ public class Game
 
     private void ComputerMove()
     {
+        Console.WriteLine("Computers hand: " + string.Join(" ", computerHand));
         var state = new MiniMaxHelper.GameState(board, playerHand, computerHand, false);
         var bestMove = MiniMaxHelper.FindBestMove(state, 3); // Depth can be adjusted based on desired search depth
 
         if (bestMove != null)
         {
             PlayTile(computerHand, bestMove);
-            Console.WriteLine("Computer plays " + bestMove);
+
+            Console.WriteLine("Computer plays " + bestMove
+                + " \n " +
+                "\n----------------------------------------------------------- \n");
         }
         else
         {
@@ -110,7 +131,10 @@ public class Game
                 Console.WriteLine("No more tiles to draw. Computer passes turn...");
             }
         }
+
     }
+
+
 
     private void PlayTile(List<DominoTile> hand, DominoTile tile)
     {

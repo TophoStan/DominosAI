@@ -53,7 +53,7 @@ namespace Domino
 
         public static int Evaluate(GameState state)
         {
-            // Simple evaluation: difference in number of dominoes
+            // Simple evaluation: difference in number of dominoes Postive if AI has more, negative if player has more
             return state.ComputerHand.Count - state.PlayerHand.Count;
         }
 
@@ -144,14 +144,14 @@ namespace Domino
             {
                 var newState = ApplyMove(state, move, true);
                 int moveValue = Minimax(newState, depth - 1, false);
-
+                Console.WriteLine($"Move: {move} with value {moveValue}");
                 if (moveValue > bestValue)
                 {
                     bestValue = moveValue;
                     bestMove = move;
                     Console.WriteLine($"Better move found: {bestMove} with value {bestValue}");
                 }
-                Console.WriteLine($"Best move: {bestMove} with value {bestValue}");
+                
             }
             return bestMove;
         }
