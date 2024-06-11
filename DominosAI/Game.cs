@@ -1,176 +1,169 @@
-﻿using Domino.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domino;
+using Domino.Domain;
 
-namespace Domino
+public class Game
 {
-    public class Game
+    private List<DominoTile> playerHand;
+    private List<DominoTile> computerHand;
+    private List<DominoTile> board;
+    private DominoSet dominoSet;
+
+    public Game()
     {
-        private List<DominoTile> playerHand;
-        private List<DominoTile> computerHand;
-        private List<DominoTile> board;
-        private DominoSet dominoSet;
+        dominoSet = new DominoSet();
+        playerHand = dominoSet.DrawTiles(7);
+        computerHand = dominoSet.DrawTiles(7);
+        board = new List<DominoTile>();
+    }
 
-        public Game()
+    public void Play()
+    {
+        bool playerTurn = true;
+
+        while (playerHand.Count > 0 && computerHand.Count > 0)
         {
-            dominoSet = new DominoSet();
-            playerHand = dominoSet.DrawTiles(7);
-            computerHand = dominoSet.DrawTiles(7);
-            board = new List<DominoTile>();
-        }
-
-        public void Play()
-        {
-            bool playerTurn = true;
-
-            while (playerHand.Count > 0 && computerHand.Count > 0)
+            if (playerTurn)
             {
-                if (playerTurn)
-                {
-                    PlayerMove();
-                }
-                else
-                {
-                    ComputerMove();
-                }
-
-                if (!playerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles() &&
-                    !computerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles())
-                {
-                    Console.WriteLine("It's a draw!");
-                    return;
-                }
-
-                playerTurn = !playerTurn;
-            }
-
-            if (playerHand.Count == 0)
-            {
-                Console.WriteLine("You win!");
-            }
-            else if (computerHand.Count == 0)
-            {
-                Console.WriteLine("Computer wins!");
+                PlayerMove();
             }
             else
             {
+                ComputerMove();
+            }
+
+            if (!playerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles() &&
+                !computerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles())
+            {
                 Console.WriteLine("It's a draw!");
-            }
-        }
-
-        private void PlayerMove()
-        {
-            bool validMove = false;
-
-            while (!validMove)
-            {
-                Console.WriteLine("Your hand: " + string.Join(" ", playerHand));
-                Console.WriteLine("Board: " + string.Join(" ", board));
-
-                Console.WriteLine("Enter the index of the tile you want to play: ");
-                int index = int.Parse(Console.ReadLine());
-
-                if (index < 0 || index >= playerHand.Count)
-                {
-                    Console.WriteLine("Invalid index. Try again.");
-                    continue;
-                }
-
-                var selectedTile = playerHand[index];
-
-                if (IsValidMove(selectedTile))
-                {
-                    PlayTile(playerHand, selectedTile);
-                    validMove = true;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid move. Try again.");
-                }
-            }
-        }
-
-        private void ComputerMove()
-        {
-            var playableTiles = GetPlayableTiles(computerHand);
-            if (playableTiles.Count == 0)
-            {
-                Console.WriteLine("Computer has no playable tiles. Drawing a tile...");
-                var drawnTile = dominoSet.DrawTile();
-                if (drawnTile != null)
-                {
-                    computerHand.Add(drawnTile);
-                }
-                else
-                {
-                    Console.WriteLine("No more tiles to draw. Computer passes turn...");
-                }
-
                 return;
             }
 
-            var selectedTile = playableTiles.First();
-            PlayTile(computerHand, selectedTile);
-
-            Console.WriteLine("Computer plays " + selectedTile);
+            playerTurn = !playerTurn;
         }
 
-        private void PlayTile(List<DominoTile> hand, DominoTile tile)
+        if (playerHand.Count == 0)
         {
-            if (board.Count == 0)
+            Console.WriteLine("You win!");
+        }
+        else if (computerHand.Count == 0)
+        {
+            Console.WriteLine("Computer wins!");
+        }
+        else
+        {
+            Console.WriteLine("It's a draw!");
+        }
+    }
+
+    private void PlayerMove()
+    {
+        bool validMove = false;
+
+        while (!validMove)
+        {
+            Console.WriteLine("Your hand: " + string.Join(" ", playerHand));
+            Console.WriteLine("Board: " + string.Join(" ", board));
+
+            Console.WriteLine("Enter the index of the tile you want to play: ");
+            int index = int.Parse(Console.ReadLine());
+
+            if (index < 0 || index >= playerHand.Count)
             {
-                board.Add(tile);
+                Console.WriteLine("Invalid index. Try again.");
+                continue;
+            }
+
+            var selectedTile = playerHand[index];
+
+            if (IsValidMove(selectedTile))
+            {
+                PlayTile(playerHand, selectedTile);
+                validMove = true;
             }
             else
             {
-                if (tile.Matches(board.First().Left))
-                {
-                    if (tile.Right != board.First().Left)
-                    {
-                        tile.Flip();
-                    }
-                    board.Insert(0, tile);
-                }
-                else if (tile.Matches(board.Last().Right))
-                {
-                    if (tile.Left != board.Last().Right)
-                    {
-                        tile.Flip();
-                    }
-                    board.Add(tile);
-                }
+                Console.WriteLine("Invalid move. Try again.");
             }
-
-            hand.Remove(tile);
         }
+    }
 
-        private List<DominoTile> GetPlayableTiles(List<DominoTile> hand)
+    private void ComputerMove()
+    {
+        var state = new MiniMaxHelper.GameState(board, playerHand, computerHand, false);
+        var bestMove = MiniMaxHelper.FindBestMove(state, 3); // Depth can be adjusted based on desired search depth
+
+        if (bestMove != null)
         {
-            if (board.Count == 0)
-            {
-                return hand;
-            }
-
-            int left = board.First().Left;
-            int right = board.Last().Right;
-
-            return hand.Where(tile => tile.Matches(left) || tile.Matches(right)).ToList();
+            PlayTile(computerHand, bestMove);
+            Console.WriteLine("Computer plays " + bestMove);
         }
-
-        private bool IsValidMove(DominoTile tile)
+        else
         {
-            if (board.Count == 0)
+            Console.WriteLine("Computer has no playable tiles. Drawing a tile...");
+            var drawnTile = dominoSet.DrawTile();
+            if (drawnTile != null)
             {
-                return true;
+                computerHand.Add(drawnTile);
             }
-
-            int left = board.First().Left;
-            int right = board.Last().Right;
-
-            return tile.Matches(left) || tile.Matches(right);
+            else
+            {
+                Console.WriteLine("No more tiles to draw. Computer passes turn...");
+            }
         }
+    }
+
+    private void PlayTile(List<DominoTile> hand, DominoTile tile)
+    {
+        if (board.Count == 0)
+        {
+            board.Add(tile);
+        }
+        else
+        {
+            if (tile.Matches(board.First().Left))
+            {
+                if (tile.Right != board.First().Left)
+                {
+                    tile.Flip();
+                }
+                board.Insert(0, tile);
+            }
+            else if (tile.Matches(board.Last().Right))
+            {
+                if (tile.Left != board.Last().Right)
+                {
+                    tile.Flip();
+                }
+                board.Add(tile);
+            }
+        }
+
+        hand.Remove(tile);
+    }
+
+    private List<DominoTile> GetPlayableTiles(List<DominoTile> hand)
+    {
+        if (board.Count == 0)
+        {
+            return hand;
+        }
+
+        int left = board.First().Left;
+        int right = board.Last().Right;
+
+        return hand.Where(tile => tile.Matches(left) || tile.Matches(right)).ToList();
+    }
+
+    private bool IsValidMove(DominoTile tile)
+    {
+        if (board.Count == 0)
+        {
+            return true;
+        }
+
+        int left = board.First().Left;
+        int right = board.Last().Right;
+
+        return tile.Matches(left) || tile.Matches(right);
     }
 }
