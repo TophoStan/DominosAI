@@ -95,6 +95,7 @@ namespace Domino
 
         private void ComputerMove()
         {
+            Console.WriteLine("PC hand: " + string.Join(" ", computerHand));
             var playableTiles = GetPlayableTiles(computerHand);
             if (playableTiles.Count == 0)
             {
@@ -112,11 +113,25 @@ namespace Domino
                 return;
             }
 
+            //Minimax Algorithm
+            //kijk naar de playerhand en de computerhand
+            //Welke tile kan de computer spelen die de player de minste punten geeft en de computer de meeste punten geeft
+            //Als de computer geen tile kan spelen die de player de minste punten geeft, speel dan de tile die de computer de meeste punten geeft
+
+
+
+           
             var selectedTile = playableTiles.First();
             PlayTile(computerHand, selectedTile);
 
-            Console.WriteLine("Computer plays " + selectedTile);
+            Console.WriteLine("Computer plays " + selectedTile 
+                + " \n " +
+                "\n----------------------------------------------------------- \n" );
+
+            
         }
+        
+         
 
         private void PlayTile(List<DominoTile> hand, DominoTile tile)
         {
