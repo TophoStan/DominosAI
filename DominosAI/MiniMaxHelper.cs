@@ -149,9 +149,10 @@ namespace Domino
                 {
                     bestValue = moveValue;
                     bestMove = move;
+                    Console.WriteLine($"Better move found: {bestMove} with value {bestValue}");
                 }
+                Console.WriteLine($"Best move: {bestMove} with value {bestValue}");
             }
-
             return bestMove;
         }
 
