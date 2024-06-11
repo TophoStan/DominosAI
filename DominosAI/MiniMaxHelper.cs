@@ -54,7 +54,7 @@ namespace Domino
         public static int Evaluate(GameState state)
         {
             // Simple evaluation: difference in number of dominoes Postive if AI has more, negative if player has more
-            return state.ComputerHand.Count - state.PlayerHand.Count; 
+            return state.PlayerHand.Count - state.ComputerHand.Count; 
         }
 
         public static GameState ApplyMove(GameState state, DominoTile move, bool isPlayerMove)
@@ -116,8 +116,8 @@ namespace Domino
                 int maxEval = int.MinValue;
                 foreach (var move in GetPossibleMoves(state))
                 {
-                    var newState = ApplyMove(state, move, true);
-                    int eval = Minimax(newState, depth - 1, false);
+                    var newState = ApplyMove(state, move, false); // False since it’s the AI's move
+                    int eval = Minimax(newState, depth - 1, false); // Opponent's turn
                     maxEval = Math.Max(maxEval, eval);
                 }
                 return maxEval;
@@ -127,13 +127,14 @@ namespace Domino
                 int minEval = int.MaxValue;
                 foreach (var move in GetPossibleMoves(state))
                 {
-                    var newState = ApplyMove(state, move, false);
-                    int eval = Minimax(newState, depth - 1, true);
+                    var newState = ApplyMove(state, move, true); // True since it’s the player's move
+                    int eval = Minimax(newState, depth - 1, true); // AI's turn next
                     minEval = Math.Min(minEval, eval);
                 }
                 return minEval;
             }
         }
+
 
         public static DominoTile FindBestMove(GameState state, int depth)
         {
@@ -142,19 +143,22 @@ namespace Domino
 
             foreach (var move in GetPossibleMoves(state))
             {
-                var newState = ApplyMove(state, move, true);
-                int moveValue = Minimax(newState, depth - 1, false);
+                // Here we pass false, since we are computing the move for the computer
+                var newState = ApplyMove(state, move, false);
+                int moveValue = Minimax(newState, depth - 1, true); // Minimizing for the opponent's turn
                 Console.WriteLine($"Move: {move} with value {moveValue}");
-                if (moveValue < bestValue || bestValue == int.MinValue)
+                if (moveValue > bestValue)
                 {
                     bestValue = moveValue;
-                    bestMove = move;
+                    bestMove = move; 
                     Console.WriteLine($"Better move found: {bestMove} with value {bestValue}");
                 }
-                
             }
             return bestMove;
         }
+
+
+
 
     }
 }
