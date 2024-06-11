@@ -30,11 +30,18 @@ public class Game
             {
                 ComputerMove();
             }
-
+            if (playerHand.Count == 0)
+            {
+                Console.WriteLine("You win!");
+            }
+            else if (computerHand.Count == 0)
+            {
+                Console.WriteLine("Computer wins!");
+            }
             if (!playerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles() &&
                 !computerHand.Any(tile => IsValidMove(tile)) && !dominoSet.HasTiles())
             {
-                Console.WriteLine("It's a draw!");
+                Console.WriteLine("It's a draw!!!");
                 return;
             }
 
@@ -108,7 +115,7 @@ public class Game
     {
         Console.WriteLine("Computers hand: " + string.Join(" ", computerHand));
         var state = new MiniMaxHelper.GameState(board, playerHand, computerHand, false);
-        var bestMove = MiniMaxHelper.FindBestMove(state, 3); // Depth can be adjusted based on desired search depth
+        var bestMove = MiniMaxHelper.FindBestMove(state, computerHand.Count); // Depth can be adjusted based on desired search depth
 
         if (bestMove != null)
         {
